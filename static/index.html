@@ -266,27 +266,27 @@
 </div>
 </div>
 <div class="flex-1 relative overflow-hidden flex items-center justify-center p-8">
-<!-- Stylized Dark World Map Container -->
-<div class="absolute inset-0 opacity-40 grayscale brightness-50 mix-blend-luminosity">
-<img alt="World Map Background" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9l7-uTuXHFafWytm_KMfON3tgncVVhHeuF_d7vWnvhIOxY-laa01NvbAG8UJoZbPKSJVYPjkAX3WUjhA6FM-j0EtPyhKmDE1NbTT7t5BzTXP5jabC1y0uH2zdh7PU60RA1b1o3YCr72OhaHeYNhmy1tZ9nMjnHi8ieUVVSWneeLSqNBlRuk9jC9opP1GoycMzA8fLiYnTNE-rGGI2wH9U4yVDlBL_Z522YWx99MQvcvo0fLh-g_WxEdb5kYnc3DWHfJNy3gI1_Uhc"/>
-</div>
+<!-- Stylized Dark World Map Container with Strict Mathematical Stretching -->
+<div class="relative w-full aspect-[2/1] max-w-4xl opacity-80 rounded-xl overflow-hidden" 
+     style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA9l7-uTuXHFafWytm_KMfON3tgncVVhHeuF_d7vWnvhIOxY-laa01NvbAG8UJoZbPKSJVYPjkAX3WUjhA6FM-j0EtPyhKmDE1NbTT7t5BzTXP5jabC1y0uH2zdh7PU60RA1b1o3YCr72OhaHeYNhmy1tZ9nMjnHi8ieUVVSWneeLSqNBlRuk9jC9opP1GoycMzA8fLiYnTNE-rGGI2wH9U4yVDlBL_Z522YWx99MQvcvo0fLh-g_WxEdb5kYnc3DWHfJNy3gI1_Uhc'); background-size: 100% 100%; filter: grayscale(1) brightness(0.5);">
+
 <!-- SVG Overlay for Hotspots -->
-<svg class="absolute inset-0 w-full h-full pointer-events-none" viewbox="0 0 1000 500">
+<svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1000 500" preserveAspectRatio="none">
 <!-- Red Hotspot (DRC Region approx) -->
-<g transform="translate(520, 300)">
+<g transform="translate(540, 310)">
 <circle class="fill-red-500 opacity-80" cx="0" cy="0" r="10"></circle>
 <circle class="stroke-red-500 stroke-2 fill-none hotspot-pulse" cx="0" cy="0" r="15"></circle>
 <circle class="stroke-red-500/50 stroke-1 fill-none hotspot-pulse" cx="0" cy="0" r="30" style="animation-delay: 1s;"></circle>
 <circle class="stroke-red-500/20 stroke-1 fill-none hotspot-pulse" cx="0" cy="0" r="45" style="animation-delay: 2s;"></circle>
 </g>
 <!-- Orange Hotspot (USA East Coast approx) -->
-<g transform="translate(260, 180)">
+<g transform="translate(230, 210)">
 <circle class="fill-orange-500 opacity-80" cx="0" cy="0" r="8"></circle>
 <circle class="stroke-orange-500 stroke-2 fill-none hotspot-pulse" cx="0" cy="0" r="12"></circle>
 <circle class="stroke-orange-500/40 stroke-1 fill-none hotspot-pulse" cx="0" cy="0" r="25" style="animation-delay: 0.5s;"></circle>
 </g>
 <!-- Yellow Hotspot (SE Asia approx) -->
-<g transform="translate(750, 280)">
+<g transform="translate(760, 270)">
 <circle class="fill-yellow-400 opacity-80" cx="0" cy="0" r="6"></circle>
 <circle class="stroke-yellow-400 stroke-2 fill-none hotspot-pulse" cx="0" cy="0" r="10"></circle>
 <circle class="stroke-yellow-400/30 stroke-1 fill-none hotspot-pulse" cx="0" cy="0" r="20" style="animation-delay: 1.5s;"></circle>
@@ -294,6 +294,7 @@
 </svg>
 <!-- Scanning Lines Effect -->
 <div class="absolute inset-0 pointer-events-none bg-[linear-gradient(transparent_0%,rgba(0,242,255,0.05)_50%,transparent_100%)] bg-[length:100%_4px] animate-[pulse_4s_infinite]"></div>
+</div>
 </div>
 <!-- Footer Stats inside Map -->
 <div class="absolute bottom-6 left-8 right-8 flex justify-between items-end">
@@ -462,7 +463,9 @@
                 
                 // Time formatter
                 const formatTimeAgo = (dateStr) => {
+                    if (!dateStr) return 'Recently';
                     const diff = (new Date() - new Date(dateStr)) / 1000 / 60;
+                    if (isNaN(diff)) return 'Recently';
                     if (diff < 60) return Math.round(diff) + 'm ago';
                     else return Math.round(diff / 60) + 'h ago';
                 };
@@ -489,7 +492,7 @@
                     }
                     
                     const title = alert.title.length > 70 ? alert.title.substring(0, 70) + '...' : alert.title;
-                    const timeStr = formatTimeAgo(alert.publication_date);
+                    const timeStr = formatTimeAgo(alert.date_issued);
                     
                     container.innerHTML += `
                     <div class="group relative bg-surface-container-high/40 border border-white/5 rounded-xl p-4 transition-all duration-300 hover:bg-white/5 ${bgBorder} cursor-pointer overflow-hidden" onclick="window.open('${alert.url}', '_blank')">
