@@ -15,6 +15,8 @@ from datetime import datetime, timezone
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 # Ensure the medfusion directory is in the path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -101,6 +103,14 @@ app.include_router(drugs_router, prefix="/api/v1")
 app.include_router(sources_router, prefix="/api/v1")
 app.include_router(analytics_router, prefix="/api/v1")
 
+# Mount Static Files for Dashboard
+os.makedirs("static", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+@app.get("/dashboard", tags=["UI"], summary="Web Dashboard")
+async def get_dashboard():
+    return FileResponse("static/index.html")
+
 # Global collector instances
 collectors = []
 
@@ -121,6 +131,7 @@ async def root():
         "redoc": "/redoc",
         "api_base": "/api/v1",
         "endpoints": {
+            "dashboard": "/dashboard",
             "surveillance_query": "/api/v1/surveillance/query",
             "surveillance_summary": "/api/v1/surveillance/summary",
             "diseases": "/api/v1/diseases",

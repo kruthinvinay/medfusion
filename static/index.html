@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MedFusion — Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary": "#00391b",
+              "surface-container-low": "#191c1f",
+              "on-secondary-container": "#500050",
+              "surface-tint": "#00dbe7",
+              "secondary": "#ffabf3",
+              "inverse-surface": "#e1e2e7",
+              "surface-bright": "#37393d",
+              "primary-fixed": "#74f5ff",
+              "on-secondary-fixed": "#380038",
+              "outline-variant": "#3a494b",
+              "background": "#111417",
+              "secondary-container": "#fe00fe",
+              "tertiary-fixed-dim": "#00e37f",
+              "surface-dim": "#111417",
+              "on-secondary": "#5b005b",
+              "tertiary-fixed": "#5dff9e",
+              "on-secondary-fixed-variant": "#810081",
+              "on-tertiary-container": "#006f3b",
+              "surface-variant": "#323539",
+              "inverse-on-surface": "#2e3134",
+              "on-error": "#690005",
+              "surface-container-lowest": "#0c0e12",
+              "surface-container-high": "#282a2e",
+              "on-primary": "#00363a",
+              "on-surface": "#e1e2e7",
+              "on-primary-fixed": "#002022",
+              "secondary-fixed-dim": "#ffabf3",
+              "error": "#ffb4ab",
+              "tertiary-container": "#00fb8d",
+              "on-tertiary-fixed": "#00210d",
+              "on-tertiary-fixed-variant": "#00522a",
+              "tertiary": "#e3ffe6",
+              "inverse-primary": "#00696f",
+              "primary": "#e1fdff",
+              "error-container": "#93000a",
+              "on-surface-variant": "#b9cacb",
+              "primary-fixed-dim": "#00dbe7",
+              "primary-container": "#00f2ff",
+              "surface-container": "#1d2023",
+              "on-primary-fixed-variant": "#004f54",
+              "outline": "#849495",
+              "surface": "#111417",
+              "surface-container-highest": "#323539",
+              "on-background": "#e1e2e7",
+              "on-primary-container": "#006a71",
+              "on-error-container": "#ffdad6",
+              "secondary-fixed": "#ffd7f5"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #111417;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(0, 242, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(254, 0, 254, 0.03) 0%, transparent 40%);
+        }
+        .glass-panel {
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(0, 242, 255, 0.1);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-body text-on-surface selection:bg-primary-container selection:text-on-primary-container overflow-hidden h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="bg-[#111417]/40 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] h-20 flex justify-between items-center px-8 w-full max-w-[1920px] mx-auto z-50">
+<div class="flex items-center gap-12">
+<span class="text-2xl font-black tracking-tighter text-[#00F2FF] drop-shadow-[0_0_8px_rgba(0,242,255,0.5)]">MedFusion</span>
+<nav class="hidden md:flex gap-8 font-['Inter'] tracking-tight text-sm font-medium uppercase">
+<a class="text-[#00F2FF] border-b-2 border-[#00F2FF] pb-1 font-bold" href="#">Dashboard</a>
+<a class="text-on-surface-variant hover:text-white transition-colors" href="/docs" target="_blank">API Docs</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<!-- Glassmorphism Search Bar -->
+<div class="relative group hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="bg-surface-container-low/40 border-none rounded-full py-2 pl-10 pr-4 text-sm w-64 focus:ring-1 focus:ring-primary-container glass-panel transition-all" placeholder="Scan biocodes..." type="text"/>
+</div>
+<!-- Pulsing Alert Badge -->
+<div class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-error-container/20 border border-error/30 animate-pulse">
+<span class="flex h-2 w-2 rounded-full bg-error"></span>
+<span id="header-alerts" class="text-error text-xs font-bold tracking-widest uppercase">Active Alerts: --</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-[#00F2FF]/10 p-2 rounded-full transition-all" onclick="loadDashboardData()">refresh</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-[#00F2FF]/10 p-2 rounded-full transition-all">settings</button>
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- Side Navigation Bar -->
+<aside class="hidden md:flex flex-col h-full w-72 bg-[#111417]/60 backdrop-blur-2xl shadow-[4px_0_24px_rgba(0,0,0,0.5)] py-6 z-40">
+<div class="px-6 mb-10 flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-container to-on-primary-container flex items-center justify-center shadow-[0_0_15px_rgba(0,242,255,0.3)]">
+<span class="material-symbols-outlined text-on-primary text-3xl">hub</span>
+</div>
+<div>
+<h2 class="text-[#00F2FF] font-bold text-sm tracking-wide">Command Center</h2>
+<p class="font-['Inter'] text-[10px] tracking-widest uppercase text-slate-400">Orbital Surveillance</p>
+</div>
+</div>
+<div class="flex-1 space-y-1 px-4">
+<div class="group py-3 px-4 flex items-center gap-4 text-slate-400 hover:text-white hover:translate-x-1 transition-transform duration-200 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="public">public</span>
+<span class="font-['Inter'] text-xs tracking-widest uppercase">Global Overview</span>
+</div>
+<div class="group py-3 px-4 flex items-center gap-4 text-slate-400 hover:text-white hover:translate-x-1 transition-transform duration-200 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="biotech">biotech</span>
+<span class="font-['Inter'] text-xs tracking-widest uppercase">Pathogen Tracking</span>
+</div>
+<div class="group py-3 px-4 flex items-center gap-4 text-slate-400 hover:text-white hover:translate-x-1 transition-transform duration-200 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+<span class="font-['Inter'] text-xs tracking-widest uppercase">Risk Assessment</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 overflow-y-auto p-10 relative">
+<!-- Background Decoration -->
+<div class="absolute top-0 right-0 -z-10 w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full"></div>
+<header class="mb-12">
+<h1 class="text-4xl font-extrabold tracking-tight mb-2">Operational Canvas</h1>
+<p class="text-on-surface-variant font-medium">Real-time biosecurity telemetry and global health monitoring.</p>
+</header>
+<!-- Summary Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+<!-- Card 1 -->
+<div class="bg-surface-container/30 glass-panel rounded-xl p-6 relative overflow-hidden group hover:bg-surface-container/50 transition-all duration-500">
+<div class="absolute -top-4 -right-4 w-24 h-24 bg-primary-container/10 blur-2xl rounded-full"></div>
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-primary-fixed-dim text-3xl">monitoring</span>
+<span class="text-[10px] font-bold tracking-[0.2em] text-on-surface-variant uppercase">Real-time</span>
+</div>
+<p class="text-on-surface-variant text-xs font-bold tracking-widest uppercase mb-1">Total Events</p>
+<h3 id="stat-events" class="text-5xl font-black text-primary-container drop-shadow-[0_0_12px_rgba(0,242,255,0.4)]">--</h3>
+<div class="mt-4 flex items-center gap-2">
+<span class="text-emerald-400 text-xs font-bold">+Live</span>
+<span class="text-on-surface-variant text-[10px]">Updating feed</span>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container/30 glass-panel rounded-xl p-6 relative overflow-hidden group hover:bg-surface-container/50 transition-all duration-500">
+<div class="absolute -top-4 -right-4 w-24 h-24 bg-secondary-container/10 blur-2xl rounded-full"></div>
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-secondary text-3xl">coronavirus</span>
+<span class="text-[10px] font-bold tracking-[0.2em] text-on-surface-variant uppercase">Strains</span>
+</div>
+<p class="text-on-surface-variant text-xs font-bold tracking-widest uppercase mb-1">Diseases Tracked</p>
+<h3 id="stat-diseases" class="text-5xl font-black text-secondary-container drop-shadow-[0_0_12px_rgba(254,0,254,0.3)]">--</h3>
+<div class="mt-4 flex items-center gap-2">
+<span class="text-on-surface-variant text-[10px]">Active Genome Sequencing</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container/30 glass-panel rounded-xl p-6 relative overflow-hidden group hover:bg-surface-container/50 transition-all duration-500">
+<div class="absolute -top-4 -right-4 w-24 h-24 bg-tertiary-container/10 blur-2xl rounded-full"></div>
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-3xl">public</span>
+<span class="text-[10px] font-bold tracking-[0.2em] text-on-surface-variant uppercase">Reach</span>
+</div>
+<p class="text-on-surface-variant text-xs font-bold tracking-widest uppercase mb-1">Countries Affected</p>
+<h3 id="stat-countries" class="text-5xl font-black text-tertiary-container drop-shadow-[0_0_12px_rgba(0,251,141,0.3)]">--</h3>
+<div class="mt-4 flex items-center gap-2">
+<span class="text-on-surface-variant text-[10px]">WHO Priority Regions</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container/30 glass-panel rounded-xl p-6 relative overflow-hidden group hover:bg-surface-container/50 transition-all duration-500">
+<div class="absolute -top-4 -right-4 w-24 h-24 bg-primary-container/10 blur-2xl rounded-full"></div>
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-primary-fixed-dim text-3xl">database</span>
+<span class="text-[10px] font-bold tracking-[0.2em] text-on-surface-variant uppercase">Network</span>
+</div>
+<p class="text-on-surface-variant text-xs font-bold tracking-widest uppercase mb-1">Data Sources</p>
+<h3 id="stat-sources" class="text-5xl font-black text-primary-container drop-shadow-[0_0_12px_rgba(0,242,255,0.4)]">-/- <span class="text-2xl opacity-60">Active</span></h3>
+<div class="mt-4 flex items-center gap-2">
+<div class="flex gap-1" id="sources-dots">
+<span class="w-1 h-3 rounded-full bg-primary-container"></span>
+<span class="w-1 h-3 rounded-full bg-primary-container"></span>
+<span class="w-1 h-3 rounded-full bg-primary-container"></span>
+<span class="w-1 h-3 rounded-full bg-primary-container opacity-40"></span>
+</div>
+<span class="text-on-surface-variant text-[10px]">Uptime 99.9%</span>
+</div>
+</div>
+</section>
+<!-- Primary Data Visualizer (Bento Section) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[500px]">
+<div class="lg:col-span-2 bg-surface-container-low/40 glass-panel rounded-xl overflow-hidden relative p-8">
+<div class="flex justify-between items-center mb-8">
+<div>
+<h4 class="text-lg font-bold">Global Transmission Map</h4>
+<p class="text-xs text-on-surface-variant uppercase tracking-widest">Heat Map / Orbital View</p>
+</div>
+<div class="flex gap-2">
+<button class="bg-surface-variant text-[10px] font-bold px-3 py-1 rounded-full text-on-surface">24H</button>
+<button class="bg-primary-container/20 border border-primary-container/30 text-[10px] font-bold px-3 py-1 rounded-full text-primary-container">LIVE</button>
+</div>
+</div>
+<div class="w-full h-full rounded-xl overflow-hidden opacity-80">
+<img class="w-full h-full object-cover grayscale brightness-50" style="object-position: center;" alt="World map" src="https://images.unsplash.com/photo-1588691880918-0f04c3405b63?q=80&w=2000&auto=format&fit=crop"/>
+</div>
+<div class="absolute bottom-12 right-12 flex flex-col items-end gap-2">
+<div class="bg-surface-bright/80 backdrop-blur-md px-4 py-2 rounded-lg border border-primary-container/20">
+<p class="text-[10px] uppercase font-bold text-primary-container tracking-tighter">Peak Vector Activity</p>
+<p class="text-lg font-black" id="peak-region">Multiple Regions</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-6">
+<div class="flex-1 bg-surface-container-low/40 glass-panel rounded-xl p-6 flex flex-col">
+<h4 class="text-sm font-bold tracking-widest uppercase text-on-surface-variant mb-4 flex-shrink-0">Urgent Alerts</h4>
+<div class="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar" id="alerts-container">
+    <div class="p-3 text-center text-on-surface-variant text-xs font-medium">Loading live feeds...</div>
+</div>
+<button class="w-full mt-4 py-2 rounded-lg bg-surface-variant text-[10px] font-bold tracking-widest uppercase hover:bg-surface-container-highest transition-colors flex-shrink-0">View All Protocols</button>
+</div>
+<div class="h-[120px] bg-gradient-to-br from-primary-container to-on-primary-container rounded-xl p-6 flex flex-col justify-between">
+<span class="material-symbols-outlined text-on-primary text-4xl">rocket_launch</span>
+<div>
+<p class="text-on-primary text-xs font-bold uppercase tracking-widest">Next Sync</p>
+<p class="text-on-primary text-2xl font-black" id="next-sync">15:00</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+<!-- API Integration Logic -->
+<script>
+    async function loadDashboardData() {
+        try {
+            // Load Summary
+            const sumRes = await fetch('/api/v1/surveillance/summary');
+            const sumData = await sumRes.json();
+            if(sumData.status === 'success') {
+                document.getElementById('stat-events').innerText = sumData.data.total_events.toLocaleString();
+                document.getElementById('stat-diseases').innerText = sumData.data.total_diseases;
+                document.getElementById('stat-countries').innerText = sumData.data.total_countries;
+                
+                // Sources dots
+                let dots = '';
+                for(let i=0; i<sumData.data.sources_total; i++) {
+                    const opacity = i < sumData.data.sources_active ? '' : 'opacity-40';
+                    dots += `<span class="w-1 h-3 rounded-full bg-primary-container ${opacity}"></span>`;
+                }
+                document.getElementById('sources-dots').innerHTML = dots;
+                document.getElementById('stat-sources').innerHTML = `${sumData.data.sources_active}/${sumData.data.sources_total} <span class="text-2xl opacity-60">Active</span>`;
+                document.getElementById('header-alerts').innerText = `Active Alerts: ${sumData.data.active_alerts}`;
+            }
+
+            // Load Alerts
+            const altRes = await fetch('/api/v1/alerts/recent?hours=72&limit=4');
+            const altData = await altRes.json();
+            if(altData.status === 'success') {
+                const container = document.getElementById('alerts-container');
+                container.innerHTML = '';
+                const alerts = altData.data.slice(0, 4);
+                
+                if (alerts.length === 0) {
+                    container.innerHTML = '<div class="p-4 text-center text-slate-400 text-xs">No active alerts in the last 72 hours.</div>';
+                }
+                
+                alerts.forEach(alert => {
+                    const isHigh = alert.severity === 'high';
+                    const isMedium = alert.severity === 'medium';
+                    
+                    let bgClass = 'bg-primary-container/10';
+                    let borderClass = 'border-primary-container';
+                    let textClass = 'text-primary-container';
+                    
+                    if (isHigh) {
+                        bgClass = 'bg-error-container/10';
+                        borderClass = 'border-error';
+                        textClass = 'text-error';
+                    } else if (isMedium) {
+                        bgClass = 'bg-secondary-container/10';
+                        borderClass = 'border-secondary';
+                        textClass = 'text-secondary';
+                    }
+                    
+                    const title = alert.title.length > 55 ? alert.title.substring(0, 55) + '...' : alert.title;
+                    
+                    container.innerHTML += `
+                    <div class="p-3 ${bgClass} border-l-2 ${borderClass} rounded-r-lg hover:bg-surface-variant transition-colors group cursor-pointer" onclick="window.open('${alert.url}', '_blank')">
+                        <p class="text-[10px] font-black ${textClass} mb-1">${alert.severity.toUpperCase()} • ${alert.disease_name || 'UNKNOWN'}</p>
+                        <p class="text-xs font-medium text-on-surface group-hover:text-primary-container transition-colors">${title}</p>
+                    </div>`;
+                });
+            }
+
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    // Timer logic
+    let totalSeconds = 15 * 60; // 15 mins
+    function startTimer() {
+        setInterval(() => {
+            totalSeconds--;
+            if (totalSeconds < 0) {
+                totalSeconds = 15 * 60;
+                loadDashboardData();
+            }
+            const m = Math.floor(totalSeconds / 60);
+            const s = totalSeconds % 60;
+            const ms = m < 10 ? '0'+m : m;
+            const ss = s < 10 ? '0'+s : s;
+            document.getElementById('next-sync').innerText = `${ms}:${ss}`;
+        }, 1000);
+    }
+
+    // Init
+    document.addEventListener("DOMContentLoaded", () => {
+        loadDashboardData();
+        startTimer();
+    });
+</script>
+<style>
+  /* Add custom scrollbar for alerts container */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 242, 255, 0.2);
+    border-radius: 10px;
+  }
+</style>
+</body></html>

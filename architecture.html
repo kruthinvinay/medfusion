@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedFusion Architecture Diagram</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: transparent;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .mermaid {
+            width: 100%;
+            max-width: 1400px;
+        }
+        @media print {
+            body { 
+                padding: 0; 
+                margin: 0; 
+                background-color: white; 
+            }
+            @page {
+                size: landscape;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mermaid">
+        %%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#ffffff', 'edgeLabelBackground':'#ffffff', 'tertiaryColor': '#f3f4f6'}}}%%
+        graph LR
+            %% Data Sources
+            subgraph Ingestion["Data Ingestion Layer (9 Sources)"]
+                A1[Disease.sh API]
+                A2[WHO GHO OData]
+                A3[CDC Socrata API]
+                A4[CDC FluView RSS]
+                A5[ProMED RSS]
+                A6[HealthMap Scraper]
+                A7[IHME GHDx]
+                A8[ECDC API]
+                A9[UK Gov API]
+                Clock((APScheduler)) -.-> A1 & A2 & A3 & A4 & A5 & A6 & A7 & A8 & A9
+            end
+
+            %% Normalization
+            subgraph Normalization["Data Normalization Engine"]
+                N1[Disease Ontology Mapper]
+                N2[Location Resolver]
+                N3[Temporal Parser]
+            end
+
+            A1 & A2 & A3 & A4 & A5 & A6 & A7 & A8 & A9 --> Normalization
+
+            %% Core Application
+            subgraph Core["MedFusion Backend (FastAPI)"]
+                API_Core[FastAPI App Core]
+                DB[(SQLite Async DB)]
+                Knowledge[Genomic & Drug Curated Data]
+                
+                API_Core <--> DB
+                Knowledge --> DB
+            end
+
+            Normalization --> API_Core
+
+            %% Analytics
+            subgraph Analytics["Analytics Engine"]
+                AN1[Trend Analysis]
+                AN2[Anomaly Detection Z-Score]
+                AN3[Multi-factor Risk Scoring]
+            end
+
+            DB <--> Analytics
+
+            %% API Routers
+            subgraph Routers["REST API Routers"]
+                R1[/surveillance/]
+                R2[/diseases/]
+                R3[/alerts/]
+                R4[/trends/]
+                R5[/analytics/]
+                R6[/genomics/]
+                R7[/drugs/]
+                R8[/sources/]
+            end
+
+            API_Core --> Routers
+
+            %% Clients
+            subgraph Clients["Presentation Layer"]
+                UI[Frontend Dashboard UI]
+                Docs[Swagger API Docs]
+            end
+
+            Routers --> UI & Docs
+
+            %% Styling Config
+            classDef primary fill:#2563eb,stroke:#1d4ed8,stroke-width:2px,color:#fff,rx:8px,ry:8px;
+            classDef source fill:#059669,stroke:#047857,stroke-width:2px,color:#fff,rx:6px,ry:6px;
+            classDef database fill:#db2777,stroke:#be185d,stroke-width:2px,color:#fff,rx:8px,ry:8px;
+            classDef engine fill:#7c3aed,stroke:#6d28d9,stroke-width:2px,color:#fff,rx:8px,ry:8px;
+            classDef default fill:#f9fafb,stroke:#d1d5db,stroke-width:2px;
+
+            class A1,A2,A3,A4,A5,A6,A7,A8,A9 source;
+            class API_Core primary;
+            class DB database;
+            class N1,N2,N3,AN1,AN2,AN3 engine;
+            
+            %% Subtle styling for the big bounding boxes
+            style Ingestion fill:#f0fdf4,stroke:#86efac,stroke-width:2px,stroke-dasharray: 5 5;
+            style Normalization fill:#faf5ff,stroke:#d8b4fe,stroke-width:2px,stroke-dasharray: 5 5;
+            style Core fill:#eff6ff,stroke:#93c5fd,stroke-width:2px,stroke-dasharray: 5 5;
+            style Analytics fill:#faf5ff,stroke:#d8b4fe,stroke-width:2px,stroke-dasharray: 5 5;
+            style Routers fill:#f3f4f6,stroke:#d1d5db,stroke-width:2px,stroke-dasharray: 5 5;
+            style Clients fill:#fffbeb,stroke:#fcd34d,stroke-width:2px,stroke-dasharray: 5 5;
+    </div>
+
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, securityLevel: 'loose' });
+    </script>
+</body>
+</html>
